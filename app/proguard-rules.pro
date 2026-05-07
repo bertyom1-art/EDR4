@@ -1,0 +1,15 @@
+-keep class com.droidedr.** { *; }
+-keep class com.droidedr.detection.** { *; }
+-keep class com.droidedr.healing.** { *; }
+-keep class com.droidedr.baseline.** { *; }
+-keep class com.droidedr.network.** { *; }
+-keepclassmembers class * extends android.app.Service { *; }
+-keepclassmembers class * extends android.content.BroadcastReceiver { *; }
+-keepclassmembers class * extends android.app.admin.DeviceAdminReceiver { *; }
+-keepclassmembers class * extends android.accessibilityservice.AccessibilityService { *; }
+-keepclassmembers class * extends android.net.VpnService { *; }
+-keep class com.google.gson.** { *; }
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
+-dontwarn kotlin.**
+-dontwarn kotlinx.**

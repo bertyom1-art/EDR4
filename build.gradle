@@ -1,28 +1,10 @@
-// Top-level build file for DroidEDR v2
 buildscript {
-    ext {
-        kotlin_version = '1.9.22'
-        compose_version = '1.6.1'
-        compose_compiler_version = '1.5.10'
-    }
-    repositories {
-        google()
-        mavenCentral()
-    }
+    ext { kotlin_version = '1.9.22' }
+    repositories { google(); mavenCentral() }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.22-1.0.17"
     }
 }
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
+task clean(type: Delete) { delete rootProject.buildDir }

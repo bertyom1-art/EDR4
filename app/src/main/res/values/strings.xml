@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DroidEDR</string>
+    <string name="edr_accessibility_label">DroidEDR Process Monitor</string>
+    <string name="accessibility_description">DroidEDR uses accessibility services to monitor for overlay attacks, keylogging, and malicious UI interactions. No personal data is collected.</string>
+</resources>
