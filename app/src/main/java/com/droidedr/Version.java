@@ -1,0 +1,1 @@
+// DroidEDR v2.2 | 55 rules (DR-001-055) | MITRE ATT&CK Mobile Full Coverage | Play/Beacon/C2/LegitAbuse | 8 CVEs | 20 TRUST_PROFILES | Silent FCM | DexClassLoader | Samsung Push | IME Change | S25 RAT Hunt signals
