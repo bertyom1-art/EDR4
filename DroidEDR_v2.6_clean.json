@@ -1,0 +1,232 @@
+{
+  "version": "2.6",
+  "repo": "bertyom1-art/EDR4",
+  "tag": "v2.6",
+  "total_rules": 188,
+
+  "enforcement": {
+    "BASELINE_REQUIRED": false,
+    "LEARNING_PERIOD_DAYS": 0,
+    "IMMEDIATE_ENFORCEMENT": true,
+    "warmupPeriodMs": 0,
+    "JITTER_ENABLED": true,
+    "JITTER_PCT": 15,
+    "JITTER_SOURCE": "StrongBox_TEE_RNG",
+    "boot_trigger": "LOCKED_BOOT_COMPLETED",
+    "default_response": "KILL+BLOCK+FORENSIC",
+    "alert_only_rules": 0,
+    "log_only_rules": 0,
+    "baseline_rules": 0,
+    "learning_rules": 0
+  },
+
+  "signing": {
+    "algorithm": "ECDSA",
+    "curve": "secp256r1",
+    "keystore": "StrongBox_TEE",
+    "attestation": "AVB",
+    "knox_free": true
+  },
+
+  "comfog": {
+    "EX100_triggers_C16": true,
+    "C16_target": "VLAN20",
+    "C16_subnet": "172.31.20.0/24",
+    "mobile_ip": "172.31.20.10",
+    "syslog_format": "CEF",
+    "syslog_destination": "VLAN50_collector",
+    "RITA_enabled": false
+  },
+
+  "thresholds": {
+    "EX-068": { "trigger": "FCM_push_count > 4 per 45min",  "jitter": "15%" },
+    "EX-072": { "trigger": "audio_access > 7 per 45s",       "jitter": "15%" },
+    "EX-087": { "trigger": "SPS_calls > 3 per 45min",        "jitter": "15%" },
+    "EX-091": { "trigger": "OEM_connections > 8 per 50min",  "jitter": "15%" },
+    "EX-093": { "trigger": "OEM_data > 35MB per hr",         "jitter": "15%" },
+    "EX-097": { "trigger": "AI_inter_arrival < 65ms",        "jitter": "15%" },
+    "EX-159": { "trigger": "cell_location > 3 per 45s",      "jitter": "15%" }
+  },
+
+  "rules": {
+
+    "EX-001_066": { "category": "C2",       "count": 66, "global_fix": "BLOCK_NETWORK_UID+FLAG_C2_CANDIDATE",        "response": "KILL+BLOCK_NETWORK_UID+FORENSIC" },
+
+    "EX-067": { "category": "GPS",          "trigger": "GPS_enable_outside_approved_app",                            "response": "KILL+BLOCK+FORENSIC" },
+    "EX-068": { "category": "GPS",          "trigger": "FCM_push > 4 per 45min",                                     "response": "KILL+BLOCK+FORENSIC" },
+    "EX-069": { "category": "GPS",          "trigger": "GPS_batch_upload",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-070": { "category": "GPS",          "trigger": "GPS_covert_enable_via_reflection",                           "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-071": { "category": "Audio",        "trigger": "audio_record_outside_approved_app",                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-072": { "category": "Audio",        "trigger": "audio_access > 7 per 45s",                                   "response": "KILL+BLOCK+FORENSIC" },
+    "EX-073": { "category": "Audio",        "trigger": "audio_covert_start",                                         "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-074": { "category": "Updates",      "trigger": "update_source_not_official",                                  "response": "KILL+BLOCK+FORENSIC" },
+    "EX-075": { "category": "Updates",      "trigger": "update_sig_invalid",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-076": { "category": "Updates",      "trigger": "update_rollback_attempt",                                     "response": "KILL+BLOCK+FORENSIC" },
+    "EX-077": { "category": "Updates",      "trigger": "update_silent_background",                                    "response": "KILL+BLOCK+FORENSIC" },
+    "EX-078": { "category": "Updates",      "trigger": "ADB_port_5555_enable",                                       "response": "BLOCK_PORT_5555+DISABLE_ADB+FORENSIC" },
+
+    "EX-079": { "category": "Shell",        "trigger": "shell_exec_from_UID_gt_1000",                                 "response": "KILL+BLOCK+FORENSIC" },
+    "EX-080": { "category": "Shell",        "trigger": "su_request",                                                  "response": "KILL+BLOCK+FORENSIC" },
+    "EX-081": { "category": "Shell",        "trigger": "shell_via_reflection",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-082": { "category": "Shell",        "trigger": "shell_spawn_from_non_system",                                 "response": "KILL+BLOCK+FORENSIC" },
+    "EX-083": { "category": "Shell",        "trigger": "adb_command_inject",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-084": { "category": "Shell",        "trigger": "shell_encoded_payload",                                       "response": "KILL+BLOCK+FORENSIC" },
+    "EX-085": { "category": "Shell",        "trigger": "shell_env_tamper",                                            "response": "KILL+BLOCK+FORENSIC" },
+    "EX-086": { "category": "Shell",        "trigger": "shell_persist_attempt",                                       "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-087": { "category": "SPS",          "trigger": "SPS_calls > 3 per 45min",                                     "response": "QUARANTINE+BLOCK+FORENSIC" },
+    "EX-088": { "category": "SPS",          "trigger": "SPS_covert_read",                                             "response": "KILL+BLOCK+FORENSIC" },
+    "EX-089": { "category": "SPS",          "trigger": "SPS_bulk_export",                                             "response": "KILL+BLOCK+FORENSIC" },
+    "EX-090": { "category": "SPS",          "trigger": "SPS_reflection_access",                                       "response": "QUARANTINE+BLOCK+FORENSIC" },
+
+    "EX-091": { "category": "OEM",          "trigger": "OEM_connections > 8 per 50min",                               "response": "KILL+BLOCK+FORENSIC" },
+    "EX-092": { "category": "OEM",          "trigger": "OEM_undocumented_api_call",                                    "response": "KILL+BLOCK+FORENSIC" },
+    "EX-093": { "category": "OEM",          "trigger": "OEM_data > 35MB per hr",                                       "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-094": { "category": "AI",           "trigger": "AI_model_load_unsigned",                                       "response": "KILL+BLOCK+FORENSIC" },
+    "EX-095": { "category": "AI",           "trigger": "AI_covert_inference",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-096": { "category": "AI",           "trigger": "AI_data_exfil_via_model",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-097": { "category": "AI",           "trigger": "AI_inter_arrival < 65ms",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-098": { "category": "AI",           "trigger": "AI_prompt_inject",                                             "response": "KILL+BLOCK+FORENSIC" },
+    "EX-099": { "category": "AI",           "trigger": "AI_shadow_model",                                              "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-100": {
+      "category": "AI_correlation",
+      "version": "2.9",
+      "boot_order": 0,
+      "sources": 36,
+      "trigger": "36_source_correlation_threshold",
+      "response": "FULL_LOCKDOWN+C16_VLAN20_ISOLATION"
+    },
+
+    "EX-101": { "category": "IoT",          "trigger": "IoT_covert_pairing",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-102": { "category": "IoT",          "trigger": "IoT_undocumented_protocol",                                    "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-103": { "category": "Acoustic",     "trigger": "ultrasonic_beacon_detect",                                     "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-104": { "category": "Acoustic",     "trigger": "acoustic_covert_channel",                                      "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-105": { "category": "Acoustic",     "trigger": "mic_tap_via_accelerometer",                                    "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-106": { "category": "Acoustic",     "trigger": "speaker_covert_emit",                                          "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-107": { "category": "Acoustic",     "trigger": "audio_steg_detect",                                            "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-108": { "category": "Acoustic",     "trigger": "acoustic_fingerprint_probe",                                   "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-109": { "category": "Acoustic",     "trigger": "acoustic_inject_attempt",                                      "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+    "EX-110": { "category": "Acoustic",     "trigger": "mic_background_record",                                        "response": "SUSPEND_SENSORS+BLOCK+FORENSIC" },
+
+    "EX-111": { "category": "Lock",         "trigger": "lockscreen_bypass_attempt",                                    "response": "KILL+BLOCK+FORENSIC" },
+    "EX-112": { "category": "Lock",         "trigger": "keyguard_disable_attempt",                                     "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-113": { "category": "ICS",          "trigger": "ICS_protocol_on_mobile",                                       "response": "KILL+BLOCK+FORENSIC" },
+    "EX-114": { "category": "ICS",          "trigger": "SCADA_packet_detect",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-115": { "category": "ICS",          "trigger": "Modbus_Profinet_detect",                                       "response": "KILL+BLOCK+FORENSIC" },
+    "EX-116": { "category": "ICS",          "trigger": "ICS_covert_channel",                                           "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-117": { "category": "Goog",         "trigger": "GMS_covert_data_collect",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-118": { "category": "Goog",         "trigger": "Play_Services_undoc_api",                                      "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-119": { "category": "Token",        "trigger": "OAuth_token_intercept",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-120": { "category": "Token",        "trigger": "token_replay_detect",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-121": { "category": "Token",        "trigger": "token_exfil_attempt",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-122": { "category": "Token",        "trigger": "session_cookie_harvest",                                       "response": "KILL+BLOCK+FORENSIC" },
+    "EX-123": { "category": "Token",        "trigger": "JWT_tamper_detect",                                            "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-124": { "category": "Creds",        "trigger": "keylogger_pattern_detect",                                     "response": "KILL+BLOCK+FORENSIC" },
+    "EX-125": { "category": "Creds",        "trigger": "clipboard_harvest_attempt",                                    "response": "KILL+BLOCK+FORENSIC" },
+    "EX-126": { "category": "Creds",        "trigger": "credential_store_read_unauth",                                 "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-127": { "category": "WiFi",         "trigger": "rogue_AP_connect_attempt",                                     "response": "KILL+BLOCK+FORENSIC" },
+    "EX-128": { "category": "WiFi",         "trigger": "BSSID_spoof_detect",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-129": { "category": "WiFi",         "trigger": "WiFi_scan_excessive",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-130": { "category": "WiFi",         "trigger": "evil_twin_detect",                                             "response": "KILL+BLOCK+FORENSIC" },
+    "EX-131": { "category": "WiFi",         "trigger": "deauth_flood_detect",                                          "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-132": { "category": "BT",           "trigger": "BT_covert_pair",                                               "response": "KILL+BLOCK+FORENSIC" },
+    "EX-133": { "category": "BT",           "trigger": "BT_data_exfil",                                                "response": "KILL+BLOCK+FORENSIC" },
+    "EX-134": { "category": "BT",           "trigger": "BLE_beacon_inject",                                            "response": "KILL+BLOCK+FORENSIC" },
+    "EX-135": { "category": "BT",           "trigger": "BT_MITM_attempt",                                              "response": "KILL+BLOCK+FORENSIC" },
+    "EX-136": { "category": "BT",           "trigger": "BT_undoc_profile_use",                                         "response": "KILL+BLOCK+FORENSIC" },
+    "EX-137": { "category": "BT",           "trigger": "BT_silent_enable",                                             "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-138": { "category": "MDM",          "trigger": "MDM_policy_inject",                                            "response": "KILL+BLOCK+FORENSIC" },
+    "EX-139": { "category": "MDM",          "trigger": "MDM_cert_install_unauth",                                      "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-140": { "category": "A16",          "trigger": "Android16_compat_shim_abuse",                                  "response": "KILL+BLOCK+FORENSIC" },
+    "EX-141": { "category": "A16",          "trigger": "A16_permission_bypass",                                        "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-142": { "category": "Persist",      "trigger": "persist_write_outside_approved",                               "response": "KILL+BLOCK+FORENSIC" },
+    "EX-143": { "category": "Persist",      "trigger": "boot_order_enforcement",          "boot_order": 0,             "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-144": { "category": "FakeUpd",      "trigger": "fake_update_ui_inject",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-145": { "category": "FakeUpd",      "trigger": "fake_update_download_trigger",                                  "response": "KILL+BLOCK+FORENSIC" },
+    "EX-146": { "category": "FakeUpd",      "trigger": "fake_update_sig_spoof",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-147": { "category": "FakeUpd",      "trigger": "fake_update_package_replace",                                  "response": "KILL+BLOCK+FORENSIC" },
+    "EX-148": { "category": "FakeUpd",      "trigger": "fake_update_toast_phish",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-149": { "category": "FakeUpd",      "trigger": "fake_update_notification_hook",                                 "response": "KILL+BLOCK+FORENSIC" },
+    "EX-150": { "category": "FakeUpd",      "trigger": "fake_update_accessibility_abuse",                              "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-151": { "category": "Morpheus",     "trigger": "Morpheus_port_9999",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-152": { "category": "Morpheus",     "trigger": "Morpheus_port_10000_12000",                                    "response": "KILL+BLOCK+FORENSIC" },
+    "EX-153": { "category": "Morpheus",     "trigger": "Morpheus_C2_beacon",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-154": { "category": "Morpheus",     "trigger": "Morpheus_payload_inject",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-155": { "category": "Morpheus",     "trigger": "Morpheus_persistence_write",                                   "response": "KILL+BLOCK+FORENSIC" },
+    "EX-156": { "category": "Morpheus",     "trigger": "Morpheus_port_8787",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-157": { "category": "Morpheus",     "trigger": "Morpheus_CS_port_50050_50051",                                 "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-158": { "category": "Cell",         "trigger": "cell_tower_spoof_detect",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-159": { "category": "Cell",         "trigger": "cell_location > 3 per 45s",                                    "response": "KILL+BLOCK+FORENSIC" },
+    "EX-160": { "category": "Cell",         "trigger": "IMSI_catcher_pattern",                                         "response": "KILL+BLOCK+FORENSIC" },
+    "EX-161": { "category": "Cell",         "trigger": "SS7_attack_pattern",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-162": { "category": "Cell",         "trigger": "cell_silent_SMS",                                              "response": "KILL+BLOCK+FORENSIC" },
+    "EX-163": { "category": "Cell",         "trigger": "cell_baseband_cmd_inject",                                     "response": "KILL+BLOCK+FORENSIC" },
+    "EX-164": { "category": "Cell",         "trigger": "cell_roaming_force",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-165": { "category": "Cell",         "trigger": "cell_intercept_attempt",                                       "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-166": { "category": "GNSS",         "trigger": "GNSS_spoof_detect",                                            "response": "KILL+BLOCK+FORENSIC" },
+    "EX-167": { "category": "GNSS",         "trigger": "GNSS_jamming_detect",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-168": { "category": "GNSS",         "trigger": "GNSS_replay_attack",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-169": { "category": "GNSS",         "trigger": "GNSS_covert_poll",                                             "response": "KILL+BLOCK+FORENSIC" },
+    "EX-170": { "category": "GNSS",         "trigger": "GNSS_precision_exfil",                                         "response": "KILL+BLOCK+FORENSIC" },
+    "EX-171": { "category": "GNSS",         "trigger": "GNSS_fix_manipulation",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-172": { "category": "GNSS",         "trigger": "GNSS_background_track",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-173": { "category": "GNSS",         "trigger": "GNSS_undoc_api_access",                                        "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-174": { "category": "AI_sensor",    "trigger": "AI_sensor_fusion_covert",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-175": { "category": "AI_agentic",   "trigger": "AI_agentic_exec_unauth",                                       "response": "KILL+BLOCK+FORENSIC" },
+    "EX-176": { "category": "PQ",           "trigger": "PQ_algo_substitution",                                         "response": "KILL+BLOCK+FORENSIC" },
+    "EX-177": { "category": "BSSID",        "trigger": "BSSID_shadow_pattern_detect",                                  "response": "KILL+BLOCK+FORENSIC" },
+    "EX-178": { "category": "Baseband",     "trigger": "baseband_fw_tamper",                                           "response": "KILL+BLOCK+FORENSIC" },
+    "EX-179": { "category": "USB_RNDIS",    "trigger": "USB_RNDIS_covert_enable",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-180": { "category": "LogTamper",    "trigger": "syslog_delete_or_modify",                                      "response": "KILL+BLOCK+FORENSIC" },
+    "EX-181": { "category": "FwkEoP",       "trigger": "framework_EoP_pattern",                                        "response": "KILL+BLOCK+FORENSIC" },
+    "EX-182": { "category": "FwkEoP",       "trigger": "framework_privilege_escalation",                               "response": "KILL+BLOCK+FORENSIC" },
+    "EX-183": { "category": "QcomHAL",      "trigger": "Qualcomm_HAL_CVSS9.8_pattern",                                 "response": "KILL+BLOCK+FORENSIC" },
+    "EX-184": { "category": "MTE",          "trigger": "MTE_disabled_detect",                                          "response": "KILL+BLOCK+FORENSIC" },
+    "EX-185": { "category": "Cell_down",    "trigger": "cell_downgrade_IMSI_expose",                                   "response": "KILL+BLOCK+FORENSIC" },
+
+    "EX-186": {
+      "category": "WebView_OAuth",
+      "trigger": "WebView_kill+OAuth_window_gt_30s",
+      "cross_layer": "VLAN20_172.31.20.10",
+      "response": "KILL+BLOCK+FORENSIC"
+    },
+
+    "EX-187": {
+      "category": "PQC_IKEv2",
+      "rules": [
+        { "id": "187a", "trigger": "IKEv1_fallback",                      "response": "KILL+BLOCK+FORENSIC" },
+        { "id": "187b", "trigger": "missing_addke2_payload",              "response": "KILL+BLOCK+FORENSIC" },
+        { "id": "187c", "trigger": "unexpected_IKE_peer_IP",             "response": "EX100_ESCALATE+FORENSIC" },
+        { "id": "187d", "trigger": "CHILD_SA_rekey > 3 per hr",          "response": "KILL+BLOCK+FORENSIC" },
+        { "id": "187e", "trigger": "SA_lifetime_out_of_range",           "response": "KILL+BLOCK+FORENSIC" }
+      ]
+    },
+
+    "EX-188": {
+      "category": "Rogue_VPN_DoH",
+      "rules": [
+        { "id": "188a", "trigger": "OpenVPN|WireGuard|IKEv2-device|L2TP|PPTP_from_UID_gt_1000", "response": "KILL+BLOCK+FORENSIC" },
+        { "id": "188b", "trigger": "TCP443_to_DoH_resolver_from_non_browser_UID",                "response": "KILL+BLOCK+FORENSIC" }
+      ]
+    }
+  }
+}
