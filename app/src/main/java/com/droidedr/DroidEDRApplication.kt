@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.work.*
 import com.droidedr.detection.EDRCoreService
+import com.droidedr.engine.ObserveModeWorker
 import com.droidedr.healing.WatchdogWorker
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +21,7 @@ class DroidEDRApplication : Application() {
 
         WorkManager.initialize(this, config)
 
-        // Start EDR Core Service immediately
+        // Start EDR Core Service immediately (existing v2.6 enforcing engine)
         val serviceIntent = Intent(this, EDRCoreService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent)
@@ -30,6 +31,9 @@ class DroidEDRApplication : Application() {
 
         // Schedule persistent watchdog
         scheduleWatchdog()
+
+        // Schedule v2.9 observe-mode engine (log-only, runs alongside — never enforces)
+        scheduleObserveEngine()
     }
 
     private fun scheduleWatchdog() {
@@ -40,6 +44,18 @@ class DroidEDRApplication : Application() {
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "edr_watchdog_app",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+
+    private fun scheduleObserveEngine() {
+        val request = PeriodicWorkRequestBuilder<ObserveModeWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(Constraints.Builder().build())
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            ObserveModeWorker.WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,
             request
         )

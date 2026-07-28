@@ -38,7 +38,7 @@ class ObserveModeWorker(
      * Returning an empty-but-timestamped snapshot keeps the engine safe by default.
      */
     private fun collectSignals(): Signals =
-        Signals(timestamp = System.currentTimeMillis())
+        SignalCollector(applicationContext).collect()
 
     companion object {
         const val WORK_NAME = "droidedr-observe-cycle"
