@@ -411,6 +411,15 @@ class EDRDeviceAdminReceiver : DeviceAdminReceiver() {
         val serviceIntent = Intent(context, com.droidedr.detection.EDRCoreService::class.java)
         context.startService(serviceIntent)
     }
+
+    // watch-login policy feeds the v2.9 observe engine's auth_bruteforce detector.
+    // Observe-only: we only count attempts here — no lock, wipe, or reset.
+    override fun onPasswordFailed(context: Context, intent: Intent) {
+        com.droidedr.engine.AuthFailureLog.record(context)
+    }
+    override fun onPasswordSucceeded(context: Context, intent: Intent) {
+        com.droidedr.engine.AuthFailureLog.clear(context)
+    }
 }
 
 // ─── WATCHDOG WORKER ──────────────────────────────────────────────────────────

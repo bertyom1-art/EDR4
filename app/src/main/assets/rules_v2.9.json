@@ -29,8 +29,8 @@
     "severity": "HIGH",
     "threshold": 1.0,
     "plannedAction": "flag_network_drop_route",
-    "enabled": true,
-    "description": "CVE-2024-3661 Option 121 route injection (VPN bypass)"
+    "enabled": false,
+    "description": "DISABLED (N/A on Android): Android does not implement DHCP Option 121, so it is natively immune to CVE-2024-3661 (TunnelVision). No app-visible DHCP feed exists. Silence here is expected, not a coverage gap."
   },
   {
     "id": "EX-071",
@@ -41,7 +41,7 @@
     "threshold": 3.6,
     "plannedAction": "sinkhole_host",
     "enabled": true,
-    "description": "High-entropy DNS label heuristic (tunneling)"
+    "description": "High-entropy DNS label heuristic (tunneling). Dormant while an external VPN (RethinkDNS) owns the slot; activates if DroidEDR owns DNS."
   },
   {
     "id": "EX-088",
@@ -63,7 +63,7 @@
     "threshold": 5.0,
     "plannedAction": "rate_limit_auth",
     "enabled": true,
-    "description": "Auth failure / MFA fatigue threshold"
+    "description": "Auth failure / MFA fatigue: failed keyguard attempts over threshold in window (via device-admin watch-login)"
   },
   {
     "id": "EX-143",
@@ -74,6 +74,6 @@
     "threshold": 1.0,
     "plannedAction": "none",
     "enabled": true,
-    "description": "PLACEHOLDER — ported spec, detector not yet built; engine will skip and log a warning"
+    "description": "PLACEHOLDER - ported spec, detector not yet built; engine will skip and log a warning"
   }
 ]

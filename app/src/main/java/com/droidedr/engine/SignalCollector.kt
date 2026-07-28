@@ -11,9 +11,9 @@ import java.io.File
  * one field to a safe default instead of failing the whole cycle — the engine
  * would rather under-report than crash.
  *
- * Fields sourced from the DNS VPN / keyguard subsystems (recentDnsQueries,
- * dhcpOffers, authFailuresLastWindow) are left empty here and marked TODO; wire
- * them from DnsVpnService and a keyguard-failure receiver when you're ready.
+ * Fields sourced from the DNS VPN subsystem (recentDnsQueries) are left empty
+ * here and marked TODO; wire them only if DroidEDR owns the VPN slot. Auth
+ * failures come from the device-admin receiver via AuthFailureLog.
  */
 class SignalCollector(private val context: Context) {
 
@@ -25,10 +25,10 @@ class SignalCollector(private val context: Context) {
         adbTcpEnabled = safe(false) { adbTcpEnabled() },
         tcpListeners = safe(emptyList()) { listeningPorts() },
         developerOptionsOn = safe(false) { devOptionsOn() },
-        unknownSourcesAllowed = safe(false) { unknownSourcesOn() }
-        // TODO(port): recentDnsQueries  <- DnsVpnService query log
-        // TODO(port): dhcpOffers        <- DHCP watcher
-        // TODO(port): authFailuresLastWindow <- keyguard failure receiver
+        unknownSourcesAllowed = safe(false) { unknownSourcesOn() },
+        authFailuresLastWindow = safe(0) { AuthFailureLog.countInWindow(context) }
+        // TODO(port): recentDnsQueries  <- only if DroidEDR owns the VPN (RethinkDNS owns it now)
+        // TODO(port): dhcpOffers        <- N/A on Android (no Option 121 support; EX-042 disabled)
         // TODO(port): runningPackages   <- UsageStatsManager (needs PACKAGE_USAGE_STATS grant)
     )
 
