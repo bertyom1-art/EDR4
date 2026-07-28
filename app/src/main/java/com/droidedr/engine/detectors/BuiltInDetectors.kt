@@ -1,4 +1,4 @@
-cpackage com.droidedr.engine.detectors
+package com.droidedr.engine.detectors
 
 import com.droidedr.engine.Detector
 import com.droidedr.engine.Match
