@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.platform.LocalContext
+import com.droidedr.engine.*
 import com.droidedr.detection.*
 import com.droidedr.healing.*
 import kotlinx.coroutines.delay
@@ -139,6 +141,12 @@ fun EDRBottomBar(selectedTab: Int, onTabSelect: (Int) -> Unit) {
 // ─── TAB 0: DASHBOARD ─────────────────────────────────────────────────────────
 @Composable
 fun DashboardTab(alerts: List<ThreatAlert>) {
+    val context = LocalContext.current
+    val observeDao = remember { ObserveDatabase.get(context).detectionDao() }
+    val observed by observeDao.recent(50).collectAsState(initial = emptyList())
+    val ruleFreq by observeDao.ruleFrequency().collectAsState(initial = emptyList())
+    val wouldEnforce by observeDao.wouldEnforceCount().collectAsState(initial = 0)
+
     val criticalCount = alerts.count { it.technique.severity == ThreatSeverity.CRITICAL }
     val highCount = alerts.count { it.technique.severity == ThreatSeverity.HIGH }
     val totalRules = MitreRulesEngine.ALL_RULES.size
@@ -156,7 +164,7 @@ fun DashboardTab(alerts: List<ThreatAlert>) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "DROIDEDR v2.0", color = Color(0xFF00E5FF),
+                    "DROIDEDR v2.9", color = Color(0xFF00E5FF),
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold, fontSize = 20.sp
                 )
@@ -192,6 +200,28 @@ fun DashboardTab(alerts: List<ThreatAlert>) {
 
         item { SectionHeader("EDR STATUS") }
         item { EDRStatusGrid(autoRespondRules) }
+
+        item { SectionHeader("v2.9 OBSERVE ENGINE") }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StatCard("OBSERVED", observed.size.toString(), Color(0xFF00E5FF), Modifier.weight(1f))
+                StatCard("RULES FIRED", ruleFreq.size.toString(), Color(0xFF69FF47), Modifier.weight(1f))
+                StatCard("WOULD ENFORCE", wouldEnforce.toString(), Color(0xFFFF6D00), Modifier.weight(1f))
+            }
+        }
+        item { ObserveModeBanner() }
+
+        if (ruleFreq.isNotEmpty()) {
+            item { SectionHeader("OBSERVE — NOISIEST RULES") }
+            item { RuleFrequencyCard(ruleFreq.take(6)) }
+        }
+
+        item { SectionHeader("OBSERVE — RECENT DETECTIONS") }
+        if (observed.isEmpty()) {
+            item { ObserveEmptyHint() }
+        } else {
+            items(observed.take(15)) { d -> ObserveDetectionRow(d) }
+        }
     }
 }
 
@@ -937,4 +967,117 @@ fun ThreatBadge(text: String, color: Color) {
 fun formatTimestamp(ts: Long): String {
     val sdf = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
     return sdf.format(java.util.Date(ts))
+}
+
+
+// ─── v2.9 OBSERVE ENGINE — reads live from DetectionDao (log-only) ─────────────
+@Composable
+fun ObserveModeBanner() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1B2A)),
+        border = BorderStroke(1.dp, Color(0xFF69FF47).copy(alpha = 0.3f))
+    ) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(6.dp).background(Color(0xFF69FF47), CircleShape))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "OBSERVE MODE \u2014 logging only, enforcement disabled",
+                color = Color(0xFF69FF47), fontSize = 9.sp, fontFamily = FontFamily.Monospace
+            )
+        }
+    }
+}
+
+@Composable
+fun ObserveEmptyHint() {
+    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1B2A))) {
+        Text(
+            "No observations yet. Engine runs on a ~15-min cycle; detections appear here once rules match real signals.",
+            color = Color(0xFF446688), fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace, modifier = Modifier.padding(14.dp)
+        )
+    }
+}
+
+@Composable
+fun RuleFrequencyCard(freq: List<RuleFrequency>) {
+    val max = (freq.maxOfOrNull { it.hits } ?: 1).toFloat()
+    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1B2A))) {
+        Column(Modifier.padding(16.dp)) {
+            freq.forEach { rf ->
+                val ratio = rf.hits / max
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        rf.ruleId, color = Color(0xFF00E5FF),
+                        fontFamily = FontFamily.Monospace, fontSize = 10.sp,
+                        modifier = Modifier.width(72.dp)
+                    )
+                    Box(
+                        modifier = Modifier.weight(1f).height(12.dp)
+                            .background(Color(0xFF112233), RoundedCornerShape(6.dp))
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(ratio).fillMaxHeight()
+                                .background(Color(0xFFFF6D00).copy(alpha = 0.7f), RoundedCornerShape(6.dp))
+                        )
+                    }
+                    Text(
+                        " ${rf.hits}", color = Color(0xFFFF6D00),
+                        fontFamily = FontFamily.Monospace, fontSize = 10.sp,
+                        modifier = Modifier.width(34.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ObserveDetectionRow(d: Detection) {
+    val sevColor = when (d.severity) {
+        Severity.CRITICAL -> Color(0xFFFF1744)
+        Severity.HIGH -> Color(0xFFFF6D00)
+        Severity.MEDIUM -> Color(0xFFFFAB00)
+        Severity.LOW -> Color(0xFF69FF47)
+        Severity.INFO -> Color(0xFF446688)
+    }
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1B2A)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(6.dp).background(sevColor, CircleShape))
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    d.ruleId, color = sevColor, fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold, fontSize = 11.sp
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    d.mitreTechnique, color = Color(0xFF446688),
+                    fontFamily = FontFamily.Monospace, fontSize = 9.sp
+                )
+                Spacer(Modifier.weight(1f))
+                if (d.wouldEnforce) {
+                    Text(
+                        "WOULD: ${d.plannedAction}", color = Color(0xFFFF6D00),
+                        fontFamily = FontFamily.Monospace, fontSize = 8.sp
+                    )
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                d.summary, color = Color(0xFFE0F4FF),
+                fontFamily = FontFamily.Monospace, fontSize = 10.sp
+            )
+            Text(
+                "obs=${d.observedValue}  thr=${d.thresholdSnapshot}  ${d.tactic.name}",
+                color = Color(0xFF446688), fontFamily = FontFamily.Monospace, fontSize = 8.sp
+            )
+        }
+    }
 }

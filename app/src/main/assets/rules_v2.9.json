@@ -1,0 +1,79 @@
+[
+  {
+    "id": "EX-004b",
+    "detector": "su_binary",
+    "mitre": "T1633",
+    "tactic": "PRIVILEGE_ESCALATION",
+    "severity": "HIGH",
+    "threshold": 1.0,
+    "plannedAction": "suspend_offending_process",
+    "enabled": true,
+    "description": "su/Magisk artifacts present on device"
+  },
+  {
+    "id": "EX-017",
+    "detector": "adb_tcp",
+    "mitre": "T1430",
+    "tactic": "LATERAL_MOVEMENT",
+    "severity": "MEDIUM",
+    "threshold": 1.0,
+    "plannedAction": "disable_adb_tcp",
+    "enabled": true,
+    "description": "ADB over TCP exposed (port 5555)"
+  },
+  {
+    "id": "EX-042",
+    "detector": "dhcp_option121",
+    "mitre": "T1557",
+    "tactic": "CREDENTIAL_ACCESS",
+    "severity": "HIGH",
+    "threshold": 1.0,
+    "plannedAction": "flag_network_drop_route",
+    "enabled": false,
+    "description": "DISABLED (N/A on Android): Android does not implement DHCP Option 121, so it is natively immune to CVE-2024-3661 (TunnelVision). No app-visible DHCP feed exists. Silence here is expected, not a coverage gap."
+  },
+  {
+    "id": "EX-071",
+    "detector": "dns_tunneling",
+    "mitre": "T1071.004",
+    "tactic": "COMMAND_AND_CONTROL",
+    "severity": "MEDIUM",
+    "threshold": 3.6,
+    "plannedAction": "sinkhole_host",
+    "enabled": true,
+    "description": "High-entropy DNS label heuristic (tunneling). Dormant while an external VPN (RethinkDNS) owns the slot; activates if DroidEDR owns DNS."
+  },
+  {
+    "id": "EX-088",
+    "detector": "rat_package",
+    "mitre": "T1636",
+    "tactic": "COLLECTION",
+    "severity": "HIGH",
+    "threshold": 1.0,
+    "plannedAction": "suspend_package",
+    "enabled": true,
+    "description": "Remote-access / stalkerware package heuristic"
+  },
+  {
+    "id": "EX-110",
+    "detector": "auth_bruteforce",
+    "mitre": "T1110",
+    "tactic": "CREDENTIAL_ACCESS",
+    "severity": "MEDIUM",
+    "threshold": 5.0,
+    "plannedAction": "rate_limit_auth",
+    "enabled": true,
+    "description": "Auth failure / MFA fatigue: failed keyguard attempts over threshold in window (via device-admin watch-login)"
+  },
+  {
+    "id": "EX-143",
+    "detector": "unimplemented_process_injection",
+    "mitre": "T1631",
+    "tactic": "DEFENSE_EVASION",
+    "severity": "HIGH",
+    "threshold": 1.0,
+    "plannedAction": "none",
+    "enabled": true,
+    "description": "PLACEHOLDER - ported spec, detector not yet built; engine will skip and log a warning"
+  }
+]

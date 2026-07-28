@@ -1,10 +1,16 @@
 <device-admin>
     <uses-policies>
-        <limit-password/>
+        <!--
+          Trimmed to observe-only. watch-login is the ONLY policy this build uses:
+          it enables EDRDeviceAdminReceiver.onPasswordFailed, which feeds the v2.9
+          observe engine's auth_bruteforce detector (EX-110).
+
+          Deliberately removed: wipe-data, reset-password, force-lock, limit-password,
+          encrypted-storage. None were invoked by any code path (verified), and
+          granting them would arm destructive enforcement on a device the observe
+          engine is meant only to watch. Re-add a specific policy ONLY when a
+          reviewed enforcement action actually needs it.
+        -->
         <watch-login/>
-        <reset-password/>
-        <force-lock/>
-        <wipe-data/>
-        <encrypted-storage/>
     </uses-policies>
 </device-admin>
